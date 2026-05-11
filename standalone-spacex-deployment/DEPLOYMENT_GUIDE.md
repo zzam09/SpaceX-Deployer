@@ -1,204 +1,168 @@
-# SpaceX HQ Deployment Guide
+# Deploy the SpaceX Membership Portal
 
-This guide provides step-by-step instructions for deploying the SpaceX HQ membership portal to Vercel with zero configuration headaches.
+**No coding required. Everything happens in your browser. Takes about 15 minutes.**
 
-## Prerequisites
+You will use four free services:
 
-Before deploying, ensure you have:
+| Service | What it does | Sign-up link |
+|---|---|---|
+| **Firebase** | Stores your member database | [firebase.google.com](https://firebase.google.com) |
+| **Resend** | Sends the login emails | [resend.com](https://resend.com) |
+| **GitHub** | Stores your project files | [github.com](https://github.com) |
+| **Vercel** | Hosts your live website | [vercel.com](https://vercel.com) |
 
-1. **GitHub Account**: Your project must be pushed to a GitHub repository.
-2. **Vercel Account**: Sign up at [vercel.com](https://vercel.com).
-3. **Supabase Project** (Recommended): Set up at [supabase.com](https://supabase.com) for authentication and database.
-4. **Environment Variables**: Prepare your API keys and configuration values.
-
-## Step 1: Prepare Your Environment Variables
-
-Create a `.env.local` file in the root of your project with the following variables:
-
-```bash
-# Supabase Configuration
-VITE_SUPABASE_URL=your_supabase_url_here
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
-
-# Optional: Firebase Configuration (if using Firebase instead)
-VITE_FIREBASE_API_KEY=your_firebase_api_key_here
-VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_project.firebasestorage.app
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
-```
-
-**Note**: Never commit `.env.local` to version control. Use `.env.example` as a template for team members.
-
-## Step 2: Test Locally
-
-Before deploying, test the build locally to ensure everything works:
-
-```bash
-# Install dependencies
-npm install
-
-# Build the project
-npm run build
-
-# Preview the production build
-npm run serve
-```
-
-Verify that:
-- The build completes without errors.
-- All pages are accessible (home, login, user dashboard, admin panel).
-- Static assets (CSS, JS, images) load correctly.
-
-## Step 3: Push to GitHub
-
-Ensure your project is committed and pushed to GitHub:
-
-```bash
-git add .
-git commit -m "chore: prepare for Vercel deployment"
-git push origin main
-```
-
-## Step 4: Deploy to Vercel
-
-### Option A: Via Vercel Dashboard (Recommended for Beginners)
-
-1. Go to [vercel.com/dashboard](https://vercel.com/dashboard).
-2. Click **"Add New"** → **"Project"**.
-3. Select your GitHub repository.
-4. Configure the project:
-   - **Framework Preset**: Vite
-   - **Build Command**: `npm run build` (should auto-detect)
-   - **Output Directory**: `dist` (should auto-detect)
-5. Click **"Environment Variables"** and add:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
-   - (Any other required variables from your `.env.local`)
-6. Click **"Deploy"**.
-
-### Option B: Via Vercel CLI
-
-1. Install Vercel CLI globally:
-   ```bash
-   npm install -g vercel
-   ```
-
-2. Deploy from your project directory:
-   ```bash
-   vercel
-   ```
-
-3. Follow the prompts:
-   - Link to your Vercel account.
-   - Confirm the project name and settings.
-   - Add environment variables when prompted.
-
-4. Once deployed, Vercel will provide your production URL.
-
-## Step 5: Configure Environment Variables on Vercel
-
-If you didn't add environment variables during deployment:
-
-1. Go to your project on [vercel.com/dashboard](https://vercel.com/dashboard).
-2. Click on your project.
-3. Go to **Settings** → **Environment Variables**.
-4. Add each variable:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
-   - Any other required variables.
-5. Click **"Save"**.
-
-**Important**: Redeploy after adding environment variables for them to take effect:
-```bash
-vercel --prod
-```
-
-## Step 6: Verify Deployment
-
-Once deployed, test all routes:
-
-- **Home**: `https://your-domain.vercel.app/`
-- **Login**: `https://your-domain.vercel.app/pages/login`
-- **User Dashboard**: `https://your-domain.vercel.app/pages/user`
-- **Admin Panel**: `https://your-domain.vercel.app/pages/admin`
-
-All pages should load without 404 errors.
-
-## Troubleshooting
-
-### 404 Errors on Specific Routes
-
-**Cause**: Routes are not being rewritten to their HTML files.
-
-**Solution**: Ensure `vercel.json` contains the correct rewrites. The file should already be configured in your project.
-
-### Environment Variables Not Loading
-
-**Cause**: Variables not added to Vercel or not prefixed with `VITE_`.
-
-**Solution**:
-1. Verify variables are added in Vercel's Environment Variables settings.
-2. Ensure all variables are prefixed with `VITE_` (for Vite to expose them to the client).
-3. Redeploy after adding variables.
-
-### Build Fails
-
-**Cause**: Missing dependencies or build errors.
-
-**Solution**:
-1. Check the Vercel build logs for specific error messages.
-2. Run `npm install` locally and verify the build succeeds.
-3. Commit and push any fixes to GitHub, then redeploy.
-
-### Static Assets Not Loading
-
-**Cause**: Incorrect `base` path in `vite.config.ts`.
-
-**Solution**: Ensure `BASE_PATH` environment variable is set correctly (default is `/`).
-
-## Continuous Deployment
-
-Once deployed, Vercel automatically redeploys your project whenever you push changes to your GitHub repository. No additional configuration is needed.
-
-### To Update Your Deployment:
-
-1. Make changes locally.
-2. Commit and push to GitHub:
-   ```bash
-   git add .
-   git commit -m "your commit message"
-   git push origin main
-   ```
-3. Vercel will automatically detect the changes and redeploy.
-
-## Custom Domain (Optional)
-
-To use a custom domain:
-
-1. Go to your project on [vercel.com/dashboard](https://vercel.com/dashboard).
-2. Click **Settings** → **Domains**.
-3. Add your custom domain and follow the DNS configuration instructions.
-
-## Performance Optimization
-
-The `vercel.json` file includes caching headers to optimize performance:
-
-- **HTML files**: Cached for 1 hour.
-- **Static assets** (JS, CSS, images): Cached indefinitely (with content hashing).
-
-No additional configuration is needed.
-
-## Support
-
-If you encounter issues:
-
-1. Check the [Vercel documentation](https://vercel.com/docs).
-2. Review the build logs in your Vercel dashboard.
-3. Ensure all environment variables are correctly set.
-4. Test locally with `npm run build && npm run serve`.
+All four are free for small projects. You do not need a credit card for any of them.
 
 ---
 
-**Happy deploying!** 🚀
+## Part 1 — Set up Firebase (5 minutes)
+
+Firebase stores your list of members and temporarily holds the login codes your members receive by email.
+
+**1.** Go to [console.firebase.google.com](https://console.firebase.google.com) and sign in with your Google account.
+
+**2.** Click **"Add project"**, give it a name (e.g. `spacex-portal`), and click through the setup wizard. Turn off Google Analytics when asked — you don't need it.
+
+**3.** On the left sidebar, click **Build → Firestore Database**.
+
+**4.** Click **"Create database"**, choose **"Start in test mode"**, and pick any server location near you. Click **"Enable"**.
+
+**5.** Now set the security rules. Click the **"Rules"** tab and replace everything in the box with:
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /members/{memberId} {
+      allow read, write: if true;
+    }
+    match /otps/{email} {
+      allow read, write: if true;
+    }
+  }
+}
+```
+
+Click **"Publish"**.
+
+**6.** Now get your credentials. Click the gear icon next to "Project Overview" in the left sidebar → **"Project settings"**.
+
+Scroll down to **"Your apps"**. If you don't see an app there, click the **`</>`** (web) icon to add one, give it a nickname, and click "Register app".
+
+You will see a block of code that looks like this:
+
+```js
+const firebaseConfig = {
+  apiKey: "AIzaSy...",
+  authDomain: "your-project.firebaseapp.com",
+  projectId: "your-project-id",
+  storageBucket: "your-project.firebasestorage.app",
+  messagingSenderId: "123456789",
+  appId: "1:123:web:abc123"
+};
+```
+
+**Keep this tab open** — you will copy these values into Vercel in Part 4.
+
+---
+
+## Part 2 — Set up Resend (2 minutes)
+
+Resend sends the 6-digit login codes to your members by email.
+
+**1.** Go to [resend.com](https://resend.com) and create a free account.
+
+**2.** After signing in, click **"API Keys"** in the left sidebar.
+
+**3.** Click **"Create API Key"**, give it any name (e.g. `spacex-portal`), and click **"Add"**.
+
+**4.** Copy the API key — it starts with `re_`. **Save it somewhere safe.** You will only see it once.
+
+> **Testing vs. production emails**
+>
+> Out of the box, Resend will only send emails to the address you used to sign up. This is fine for testing yourself. When you are ready for real members to receive emails, go to Resend → **Domains**, add your domain, follow the DNS instructions, and set the `RESEND_FROM_EMAIL` environment variable in Vercel (see Part 4, step 6).
+
+---
+
+## Part 3 — Upload to GitHub (3 minutes)
+
+GitHub stores your files so Vercel can pull from them automatically.
+
+**1.** Go to [github.com](https://github.com) and sign in (or create a free account).
+
+**2.** Click the **"+"** icon in the top-right → **"New repository"**.
+
+**3.** Give the repository a name (e.g. `spacex-portal`). Leave everything else as the default. Click **"Create repository"**.
+
+**4.** On your computer, open the `standalone-spacex-deployment` folder. Select all files inside it.
+
+**5.** Drag and drop them into the GitHub repository page in your browser. GitHub will ask for a commit message — leave the default and click **"Commit changes"**.
+
+> If drag-and-drop does not work in your browser, click **"uploading an existing file"** link on the empty repository page instead.
+
+---
+
+## Part 4 — Deploy on Vercel (5 minutes)
+
+Vercel publishes your site and runs the email code server automatically.
+
+**1.** Go to [vercel.com](https://vercel.com) and sign in with your GitHub account.
+
+**2.** Click **"Add New…"** → **"Project"**.
+
+**3.** Find your repository in the list and click **"Import"** next to it.
+
+**4.** Vercel will auto-detect Vite. You do not need to change anything under "Build & Output Settings".
+
+**5.** Before clicking Deploy, click **"Environment Variables"** to expand that section. You need to add the following variables one by one. For each one: type the name in the "Key" box, paste the value in the "Value" box, and click "Add".
+
+| Variable name | Where to get the value |
+|---|---|
+| `VITE_FIREBASE_API_KEY` | From `apiKey` in your Firebase config (Part 1, step 6) |
+| `VITE_FIREBASE_AUTH_DOMAIN` | From `authDomain` in your Firebase config |
+| `VITE_FIREBASE_PROJECT_ID` | From `projectId` in your Firebase config |
+| `VITE_FIREBASE_STORAGE_BUCKET` | From `storageBucket` in your Firebase config |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | From `messagingSenderId` in your Firebase config |
+| `VITE_FIREBASE_APP_ID` | From `appId` in your Firebase config |
+| `RESEND_API_KEY` | The key from Resend that starts with `re_` (Part 2, step 4) |
+
+**6.** Click **"Deploy"**. Vercel will build and publish the site. When it shows a confetti animation, you are live.
+
+**7.** Click **"Continue to Dashboard"** to see your live URL (it will look like `your-project.vercel.app`).
+
+---
+
+## Part 5 — Add your first member (2 minutes)
+
+The portal uses a list of approved emails in your Firestore database. **A person can only log in if their email is in this list.**
+
+**1.** Open your live site and go to `/pages/admin` (e.g. `your-project.vercel.app/pages/admin`).
+
+**2.** Use the admin panel to add a member. Fill in their email address, name, tier, and any other details.
+
+**3.** That member can now go to `/pages/login`, enter their email, receive a 6-digit code, and log in.
+
+---
+
+## Updating the site later
+
+Whenever you want to change something, update the files in your GitHub repository (drag and drop new versions, or edit files directly on GitHub). Vercel will automatically detect the change and redeploy the site within a minute or two. No extra steps needed.
+
+---
+
+## Troubleshooting
+
+**Members say they never received the email.**
+Check that you added `RESEND_API_KEY` correctly in Vercel. For testing, the email only delivers to the address you used to sign up on Resend. For real members, you need a custom domain — see the note in Part 2.
+
+**Login says "code expired" immediately.**
+The OTP codes are stored in Firestore. Check that your Firestore rules are set exactly as shown in Part 1, step 5, and that you clicked "Publish" after saving them.
+
+**The admin panel shows no members.**
+Firestore starts empty. You need to add members through the admin panel before anyone can log in.
+
+**I see an error about Firebase.**
+Double-check that all seven environment variables are entered correctly in Vercel (Project → Settings → Environment Variables). After fixing them, go to **Deployments → Redeploy** for the changes to take effect.
+
+**The site is returning 404 errors on pages.**
+Make sure you uploaded all files including `vercel.json`. That file tells Vercel how to route the pages correctly.

@@ -7,6 +7,9 @@
     "build": "vite build",
     "serve": "vite preview --host 0.0.0.0"
   },
+  "dependencies": {
+    "resend": "^4.0.0"
+  },
   "devDependencies": {
     "glob": "^10.3.10",
     "vite": "^7.3.2"

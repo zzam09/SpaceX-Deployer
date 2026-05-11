@@ -53,7 +53,7 @@ function showEmailNotFound(email) {
                 No membership record was found for<br>
                 <code style="color:#a1a1aa; background:rgba(255,255,255,0.05); padding:2px 10px; border-radius:4px; margin-top:8px; display:inline-block;">${email}</code>
             </p>
-            <button onclick="handleNotMember()" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:#a1a1aa;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;">
+            <button data-action="not-member" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:#a1a1aa;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;">
                 Sign in with a different account
             </button>
         </div>
@@ -181,7 +181,11 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 });
 
-window.handleNotMember = function () {
+function handleNotMember() {
     clearSession();
     window.location.replace('/pages/login.html');
-};
+}
+
+document.addEventListener('click', function (e) {
+    if (e.target.closest('[data-action="not-member"]')) handleNotMember();
+});

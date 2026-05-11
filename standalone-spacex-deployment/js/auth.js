@@ -1,31 +1,48 @@
-import { db } from './firebase-config.js';
-import {
-    collection, doc, setDoc, getDoc, deleteDoc
-} from 'https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js';
+/**
+ * auth.js — Authentication layer
+ *
+ * All auth calls go through this file. To swap the provider (e.g. move to
+ * Firebase Auth, Supabase, or a different OTP backend), update only this file
+ * and firebase-config.js — the page scripts stay unchanged.
+ *
+ * Current implementation: server-side OTP via /api, session in localStorage.
+ */
 
-export function generateOTP() {
-    return String(Math.floor(1000 + Math.random() * 9000));
-}
+const API_BASE = '/api';
 
-export async function saveOTP(email, code) {
-    const expiry = Date.now() + 10 * 60 * 1000;
-    await setDoc(doc(collection(db, 'otps'), email), {
-        email,
-        code,
-        expiry
+/**
+ * Send a 6-digit OTP to the given email address.
+ * Throws with a user-readable message on failure.
+ */
+export async function sendOTP(email) {
+    const res = await fetch(`${API_BASE}/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
     });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to send verification code.');
+    return data;
 }
 
+/**
+ * Verify an OTP code for the given email.
+ * Returns { success: boolean, error?: string }
+ */
 export async function verifyOTP(email, code) {
-    const ref  = doc(collection(db, 'otps'), email);
-    const snap = await getDoc(ref);
-    if (!snap.exists()) return false;
-    const { code: savedCode, expiry } = snap.data();
-    if (savedCode !== code || Date.now() > expiry) return false;
-    await deleteDoc(ref);
-    return true;
+    const res = await fetch(`${API_BASE}/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code }),
+    });
+    const data = await res.json();
+    return { success: res.ok && data.success === true, error: data.error };
 }
 
+/**
+ * Session management — backed by localStorage.
+ * To upgrade to Firebase Auth tokens, replace these four functions.
+ */
 export function saveSession(email) {
     localStorage.setItem('session_email', email);
 }

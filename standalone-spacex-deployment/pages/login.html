@@ -150,8 +150,8 @@
             margin-bottom: 24px;
         }
         .otp-group input {
-            width: 55px;
-            height: 65px;
+            width: 44px;
+            height: 58px;
             flex: none;
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -313,7 +313,7 @@
             .step-heading { margin-bottom: 18px; }
             .step-heading h2 { font-size: 20px; }
             .otp-group { gap: 8px; margin-bottom: 18px; }
-            .otp-group input { width: 52px; height: 60px; font-size: 20px; border-radius: 10px; }
+            .otp-group input { width: 40px; height: 54px; font-size: 18px; border-radius: 10px; }
             .btn { padding: 15px; font-size: 14px; }
             .footer-note { padding: 14px 20px 20px; }
             .theme-toggle { top: 12px; right: 12px; }
@@ -323,7 +323,7 @@
             body { padding: 12px; }
             .login-body { padding: 20px 16px; }
             .otp-group { gap: 6px; }
-            .otp-group input { width: 46px; height: 56px; font-size: 18px; }
+            .otp-group input { width: 36px; height: 50px; font-size: 16px; }
         }
     </style>
 </head>
@@ -376,7 +376,7 @@
         <div class="step" id="step-otp">
             <div class="step-heading">
                 <h2>Check your email</h2>
-                <p>We sent a 4-digit code to <strong id="email-display"></strong>. Enter it below to continue.</p>
+                <p>We sent a 6-digit code to <strong id="email-display"></strong>. Enter it below to continue.</p>
             </div>
 
             <div class="otp-group" id="otp-group">
@@ -384,6 +384,8 @@
                 <input type="tel" maxlength="1" id="otp-1" inputmode="numeric" pattern="[0-9]" onkeydown="otpKeyDown(event,1)" oninput="otpInput(event,1)" />
                 <input type="tel" maxlength="1" id="otp-2" inputmode="numeric" pattern="[0-9]" onkeydown="otpKeyDown(event,2)" oninput="otpInput(event,2)" />
                 <input type="tel" maxlength="1" id="otp-3" inputmode="numeric" pattern="[0-9]" onkeydown="otpKeyDown(event,3)" oninput="otpInput(event,3)" />
+                <input type="tel" maxlength="1" id="otp-4" inputmode="numeric" pattern="[0-9]" onkeydown="otpKeyDown(event,4)" oninput="otpInput(event,4)" />
+                <input type="tel" maxlength="1" id="otp-5" inputmode="numeric" pattern="[0-9]" onkeydown="otpKeyDown(event,5)" oninput="otpInput(event,5)" />
             </div>
 
             <div class="countdown-row">
@@ -413,95 +415,77 @@
 </div>
 
 <script type="module">
-import {
-    generateOTP,
-    saveOTP,
-    verifyOTP,
-    saveSession,
-    getSession,
-    isLoggedIn
-} from '../js/auth.js';
+import { sendOTP, verifyOTP, saveSession, isLoggedIn } from '../js/auth.js';
 
 /* ─── Redirect if already logged in ─── */
-if (isLoggedIn()) {
-    window.location.replace('/pages/user.html');
-}
+if (isLoggedIn()) window.location.replace('/pages/user.html');
 
 /* ─── Theme ─── */
 const THEME_KEY = 'spacex_theme';
 
 function applyTheme(theme) {
-    if (theme === 'light') {
-        document.documentElement.classList.add('light');
-        document.getElementById('icon-moon').style.display = 'none';
-        document.getElementById('icon-sun').style.display  = '';
-    } else {
-        document.documentElement.classList.remove('light');
-        document.getElementById('icon-moon').style.display = '';
-        document.getElementById('icon-sun').style.display  = 'none';
-    }
+    const isLight = theme === 'light';
+    document.documentElement.classList.toggle('light', isLight);
+    document.getElementById('icon-moon').style.display = isLight ? 'none' : '';
+    document.getElementById('icon-sun').style.display  = isLight ? '' : 'none';
     lucide.createIcons();
 }
-
 window.toggleTheme = function () {
-    const current = localStorage.getItem(THEME_KEY) || 'dark';
-    const next = current === 'dark' ? 'light' : 'dark';
+    const next = (localStorage.getItem(THEME_KEY) || 'dark') === 'dark' ? 'light' : 'dark';
     localStorage.setItem(THEME_KEY, next);
     applyTheme(next);
 };
-
-/* Load saved theme immediately */
 applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
 
 /* ─── State ─── */
-let currentEmail  = '';
-let countdownTimer = null;
-let expiryTime    = 0;
+const OTP_LENGTH       = 6;
+const OTP_EXPIRY_MS    = 10 * 60 * 1000;
+const SEND_COOLDOWN_MS = 60 * 1000;
+const COOLDOWN_KEY     = 'spacex_otp_send_at';
 
-/* ─── Send Rate Limit ─── */
-const SEND_COOLDOWN_KEY = 'spacex_otp_send_at';
-const SEND_COOLDOWN_MS  = 60 * 1000;
-let sendCooldownTimer   = null;
+let currentEmail     = '';
+let countdownTimer   = null;
+let cooldownTimer    = null;
+let expiryTime       = 0;
 
+/* ─── Send cooldown UI ─── */
 function startSendCooldown() {
-    localStorage.setItem(SEND_COOLDOWN_KEY, Date.now());
+    localStorage.setItem(COOLDOWN_KEY, Date.now());
     runSendCooldown();
 }
 
 function runSendCooldown() {
-    clearInterval(sendCooldownTimer);
-    const btn      = document.getElementById('send-btn');
-    const btnText  = btn.querySelector('.btn-text');
-    const resendEl = document.getElementById('resend-link');
-    const resendA  = resendEl.querySelector('a');
+    clearInterval(cooldownTimer);
+    const btn     = document.getElementById('send-btn');
+    const btnText = btn.querySelector('.btn-text');
+    const resendA = document.querySelector('#resend-link a');
 
-    sendCooldownTimer = setInterval(() => {
-        const elapsed   = Date.now() - Number(localStorage.getItem(SEND_COOLDOWN_KEY) || 0);
-        const remaining = Math.ceil((SEND_COOLDOWN_MS - elapsed) / 1000);
+    cooldownTimer = setInterval(() => {
+        const remaining = Math.ceil((SEND_COOLDOWN_MS - (Date.now() - Number(localStorage.getItem(COOLDOWN_KEY) || 0))) / 1000);
         if (remaining <= 0) {
-            clearInterval(sendCooldownTimer);
-            btn.disabled          = false;
-            btnText.textContent   = 'Send Verification Code';
-            resendA.textContent   = 'Request a new code';
+            clearInterval(cooldownTimer);
+            btn.disabled = false;
+            btnText.textContent = 'Send Verification Code';
+            resendA.textContent = 'Request a new code';
             resendA.style.pointerEvents = '';
-            resendA.style.opacity       = '';
+            resendA.style.opacity = '';
             return;
         }
-        btn.disabled                = true;
-        btnText.textContent         = `Wait ${remaining}s`;
-        resendA.textContent         = `Request a new code (wait ${remaining}s)`;
+        btn.disabled = true;
+        btnText.textContent = `Wait ${remaining}s`;
+        resendA.textContent = `Request a new code (wait ${remaining}s)`;
         resendA.style.pointerEvents = 'none';
-        resendA.style.opacity       = '0.4';
+        resendA.style.opacity = '0.4';
     }, 200);
 }
 
-/* Resume cooldown if page was refreshed mid-cooldown */
-(function resumeCooldownOnLoad() {
-    const sentAt = Number(localStorage.getItem(SEND_COOLDOWN_KEY) || 0);
+/* Resume cooldown across page refreshes */
+(function () {
+    const sentAt = Number(localStorage.getItem(COOLDOWN_KEY) || 0);
     if (sentAt && Date.now() - sentAt < SEND_COOLDOWN_MS) runSendCooldown();
 })();
 
-/* ─── Helpers ─── */
+/* ─── UI helpers ─── */
 function showMsg(id, text, type) {
     const el = document.getElementById(id);
     el.textContent = text;
@@ -513,8 +497,9 @@ function clearMsg(id) {
     el.textContent = '';
 }
 function setLoading(btnId, on) {
-    document.getElementById(btnId).classList.toggle('is-loading', on);
-    document.getElementById(btnId).disabled = on;
+    const btn = document.getElementById(btnId);
+    btn.classList.toggle('is-loading', on);
+    btn.disabled = on;
 }
 function showStep(id) {
     document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
@@ -527,6 +512,7 @@ function startCountdown(durationMs) {
     expiryTime = Date.now() + durationMs;
     const el = document.getElementById('countdown-val');
     document.getElementById('resend-link').classList.remove('visible');
+    el.classList.remove('expiring');
 
     countdownTimer = setInterval(() => {
         const remaining = expiryTime - Date.now();
@@ -553,7 +539,7 @@ window.otpInput = function (e, idx) {
     clearOtpError();
     clearMsg('otp-msg');
     document.getElementById('resend-link').classList.remove('visible');
-    if (val && idx < 3) document.getElementById(`otp-${idx + 1}`).focus();
+    if (val && idx < OTP_LENGTH - 1) document.getElementById(`otp-${idx + 1}`).focus();
 };
 
 window.otpKeyDown = function (e, idx) {
@@ -566,48 +552,23 @@ window.otpKeyDown = function (e, idx) {
     if (e.key === 'Enter') verifyCode();
 };
 
-function getOtpValue() {
-    return [0,1,2,3].map(i => document.getElementById(`otp-${i}`).value).join('');
-}
-
-function clearOtpError() {
-    [0,1,2,3].forEach(i => document.getElementById(`otp-${i}`).classList.remove('otp-error'));
-}
-
-function markOtpError() {
-    [0,1,2,3].forEach(i => document.getElementById(`otp-${i}`).classList.add('otp-error'));
-}
-
+function indices() { return Array.from({ length: OTP_LENGTH }, (_, i) => i); }
+function getOtpValue() { return indices().map(i => document.getElementById(`otp-${i}`).value).join(''); }
+function clearOtpError() { indices().forEach(i => document.getElementById(`otp-${i}`).classList.remove('otp-error')); }
+function markOtpError()  { indices().forEach(i => document.getElementById(`otp-${i}`).classList.add('otp-error')); }
 function resetOtpInputs() {
-    [0,1,2,3].forEach(i => {
+    indices().forEach(i => {
         const el = document.getElementById(`otp-${i}`);
         el.value = '';
         el.classList.remove('otp-filled', 'otp-error');
     });
 }
 
-/* ─── Send OTP via API server (server proxies to Resend) ─── */
-async function sendEmailOTP(email, code) {
-    const response = await fetch('/api/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, code })
-    });
-    const data = await response.json();
-    if (!response.ok) {
-        throw new Error(data.error || 'Failed to send email');
-    }
-    return data;
-}
-
 /* ─── Step 1: Send Code ─── */
 window.sendCode = async function () {
-    const sentAt = Number(localStorage.getItem(SEND_COOLDOWN_KEY) || 0);
-    if (sentAt && Date.now() - sentAt < SEND_COOLDOWN_MS) return;
+    if (Date.now() - Number(localStorage.getItem(COOLDOWN_KEY) || 0) < SEND_COOLDOWN_MS) return;
 
     const email = document.getElementById('email-input').value.trim().toLowerCase();
-    console.log('📧 Email submitted:', email);
-    
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         showMsg('email-msg', 'Please enter a valid email address.', 'error');
         return;
@@ -616,28 +577,17 @@ window.sendCode = async function () {
     setLoading('send-btn', true);
 
     try {
-        const code = generateOTP();
-        console.log('🔢 Generated OTP code:', code);
-        
-        await saveOTP(email, code);
-        
-        console.log('📨 Calling Resend API for email:', email);
-        await sendEmailOTP(email, code);
-        console.log('✅ Resend API call completed');
-
+        await sendOTP(email);
         startSendCooldown();
         currentEmail = email;
         document.getElementById('email-display').textContent = email;
-
         showStep('step-otp');
         resetOtpInputs();
-        startCountdown(10 * 60 * 1000);
+        startCountdown(OTP_EXPIRY_MS);
         clearMsg('otp-msg');
-        document.getElementById('countdown-val').classList.remove('expiring');
         setTimeout(() => document.getElementById('otp-0').focus(), 100);
     } catch (err) {
-        console.error('❌ Error caught in sendCode:', err);
-        showMsg('email-msg', 'Something went wrong. Please try again.', 'error');
+        showMsg('email-msg', err.message || 'Something went wrong. Please try again.', 'error');
     } finally {
         setLoading('send-btn', false);
     }
@@ -646,8 +596,8 @@ window.sendCode = async function () {
 /* ─── Step 2: Verify Code ─── */
 window.verifyCode = async function () {
     const code = getOtpValue();
-    if (code.length < 4) {
-        showMsg('otp-msg', 'Please enter all 4 digits.', 'error');
+    if (code.length < OTP_LENGTH) {
+        showMsg('otp-msg', `Please enter all ${OTP_LENGTH} digits.`, 'error');
         return;
     }
     clearMsg('otp-msg');
@@ -655,23 +605,24 @@ window.verifyCode = async function () {
     setLoading('verify-btn', true);
 
     try {
-        const valid = await verifyOTP(currentEmail, code);
-        if (valid) {
+        const result = await verifyOTP(currentEmail, code);
+        if (result.success) {
             saveSession(currentEmail);
             clearInterval(countdownTimer);
             window.location.replace('/pages/user.html');
         } else {
-            const expired = Date.now() >= expiryTime;
-            if (expired) {
-                showMsg('otp-msg', 'Code expired.', 'error');
+            if (result.error?.includes('expired')) {
+                showMsg('otp-msg', 'Code expired. Request a new one below.', 'error');
+                document.getElementById('resend-link').classList.add('visible');
+            } else if (result.error?.includes('attempts')) {
+                showMsg('otp-msg', 'Too many attempts. Please request a new code.', 'error');
                 document.getElementById('resend-link').classList.add('visible');
             } else {
                 markOtpError();
-                showMsg('otp-msg', 'Incorrect code. Please try again.', 'error');
+                showMsg('otp-msg', result.error || 'Incorrect code. Please try again.', 'error');
             }
         }
     } catch (err) {
-        console.error(err);
         showMsg('otp-msg', 'Verification failed. Please try again.', 'error');
     } finally {
         setLoading('verify-btn', false);
@@ -680,26 +631,21 @@ window.verifyCode = async function () {
 
 /* ─── Request New Code ─── */
 window.requestNewCode = async function () {
-    const sentAt = Number(localStorage.getItem(SEND_COOLDOWN_KEY) || 0);
-    if (sentAt && Date.now() - sentAt < SEND_COOLDOWN_MS) return;
-
+    if (Date.now() - Number(localStorage.getItem(COOLDOWN_KEY) || 0) < SEND_COOLDOWN_MS) return;
     clearMsg('otp-msg');
     document.getElementById('resend-link').classList.remove('visible');
     document.getElementById('countdown-val').classList.remove('expiring');
 
     try {
-        const code = generateOTP();
-        await saveOTP(currentEmail, code);
-        await sendEmailOTP(currentEmail, code);
+        await sendOTP(currentEmail);
         startSendCooldown();
         resetOtpInputs();
-        startCountdown(10 * 60 * 1000);
+        startCountdown(OTP_EXPIRY_MS);
         showMsg('otp-msg', 'A new code has been sent to your email.', 'success');
         setTimeout(() => clearMsg('otp-msg'), 4000);
         setTimeout(() => document.getElementById('otp-0').focus(), 100);
     } catch (err) {
-        console.error(err);
-        showMsg('otp-msg', 'Failed to resend code. Please try again.', 'error');
+        showMsg('otp-msg', err.message || 'Failed to resend. Please try again.', 'error');
     }
 };
 
@@ -713,7 +659,6 @@ window.goBack = function () {
     showStep('step-email');
 };
 
-/* ─── Init Lucide icons ─── */
 lucide.createIcons();
 </script>
 </body>

@@ -5,24 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SpaceX HQ | Admin Panel</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="shared.css">
+    <script src="https://unpkg.com/lucide@0.454.0/dist/umd/lucide.min.js"></script>
     <style>
-        :root {
-            --bg: #050505;
-            --surface: #0f0f0f;
-            --card-black: rgba(8, 8, 8, 0.95);
-            --border: rgba(255, 255, 255, 0.04);
-            --border-bright: rgba(255, 255, 255, 0.08);
-            --text: #ffffff;
-            --muted: #a1a1aa;
-            --success: #10b981;
-            --pending: #f59e0b;
-            --gold: #c5a059;
-            --danger: #ef4444;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
-
         body {
             font-family: 'Inter', -apple-system, sans-serif;
             background: var(--bg);
@@ -218,6 +203,37 @@
             padding: 12px 20px;
             text-align: left;
             border-bottom: 1px solid var(--border);
+        }
+
+        /* ── Table Row Buttons ── */
+        .row-btn {
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.03em;
+        }
+
+        .row-btn-edit {
+            background: transparent;
+            color: #a1a1aa;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .row-btn-edit:hover {
+            border-color: rgba(255,255,255,0.2);
+            color: #fff;
+        }
+
+        .row-btn-delete {
+            background: transparent;
+            color: #ef4444;
+            border: 1px solid rgba(239,68,68,0.2);
+        }
+        .row-btn-delete:hover {
+            border-color: rgba(239,68,68,0.5);
+            background: rgba(239,68,68,0.05);
         }
 
         /* ── Modal ── */
@@ -417,20 +433,6 @@
 
         .confirm-btn-cancel:hover { color: #fff; border-color: rgba(255,255,255,0.2); }
 
-        .user-link {
-            font-size: 11px;
-            font-family: 'JetBrains Mono', monospace;
-            color: #52525b;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        .user-link:hover { color: var(--muted); }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(16px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
         @media (max-width: 768px) {
             .admin-main { padding: 24px 16px; }
             .stats-row { grid-template-columns: repeat(2, 1fr); }
@@ -465,7 +467,7 @@
             <h1>Member Management</h1>
             <p>Add, edit, or remove members from the SpaceX ecosystem.</p>
         </div>
-        <button class="add-btn" onclick="openAddModal()">
+        <button class="add-btn" id="btn-add-member">
             <i data-lucide="plus" style="width:15px;height:15px;"></i>
             Add Member
         </button>
@@ -584,8 +586,8 @@
         <div class="modal-error" id="modal-error"></div>
 
         <div class="modal-actions">
-            <button class="modal-btn modal-btn-secondary" onclick="closeModal()">Cancel</button>
-            <button class="modal-btn modal-btn-primary" onclick="saveUser()">Save Member</button>
+            <button class="modal-btn modal-btn-secondary" id="btn-modal-cancel">Cancel</button>
+            <button class="modal-btn modal-btn-primary" id="btn-modal-save">Save Member</button>
         </div>
     </div>
 </div>
@@ -600,8 +602,8 @@
         <p>This will remove <strong id="confirm-name"></strong> from the member database. This action cannot be undone.</p>
         <input type="hidden" id="confirm-id">
         <div class="confirm-actions">
-            <button class="confirm-btn-cancel" onclick="closeConfirm()">Cancel</button>
-            <button class="confirm-btn-danger" onclick="deleteUser()">Remove</button>
+            <button class="confirm-btn-cancel" id="btn-confirm-cancel">Cancel</button>
+            <button class="confirm-btn-danger" id="btn-confirm-delete">Remove</button>
         </div>
     </div>
 </div>

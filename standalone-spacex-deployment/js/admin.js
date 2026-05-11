@@ -14,14 +14,14 @@ function generateId() {
 function tierBadge(tier) {
     const colors = { 'Explorer': '#f59e0b', 'Pioneer': '#60a5fa', 'Vanguard': '#c5a059' };
     const c = colors[tier] || '#a1a1aa';
-    return `<span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;color:${c};text-transform:uppercase;letter-spacing:0.05em;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);padding:3px 10px;border-radius:6px;">${tier}</span>`;
+    return `<span class="tier-badge" style="color:${c};">${tier}</span>`;
 }
 
 function statusBadge(status) {
     if (status === 'ACTIVE') {
-        return `<span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;color:#10b981;text-transform:uppercase;letter-spacing:0.05em;"><span style="width:6px;height:6px;border-radius:50%;background:#10b981;display:inline-block;"></span>ACTIVE</span>`;
+        return `<span class="status-badge status-active"><span class="status-dot" style="background:#10b981;"></span>ACTIVE</span>`;
     }
-    return `<span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;color:#f59e0b;text-transform:uppercase;letter-spacing:0.05em;"><span style="width:6px;height:6px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>PENDING</span>`;
+    return `<span class="status-badge status-pending"><span class="status-dot" style="background:#f59e0b;"></span>PENDING</span>`;
 }
 
 function updateStats() {
@@ -39,7 +39,7 @@ function renderTable() {
     if (entries.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" style="text-align:center;padding:48px;color:#52525b;font-size:13px;">
+                <td colspan="8" style="text-align:center;padding:48px;color:#52525b;font-size:13px;">
                     No members found. Add your first member above.
                 </td>
             </tr>`;
@@ -53,9 +53,7 @@ function renderTable() {
             ? `<span title="${u.email}" style="display:inline-block;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;">${u.email}</span>`
             : `<span style="color:#3f3f46;">—</span>`;
         return `
-        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.2s;"
-            onmouseenter="this.style.background='rgba(255,255,255,0.02)'"
-            onmouseleave="this.style.background='transparent'">
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
             <td style="padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#52525b;font-weight:500;">#${u.id}</td>
             <td style="padding:16px 20px;">
                 <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:2px;">${u.name}</div>
@@ -68,12 +66,8 @@ function renderTable() {
             <td style="padding:16px 20px;font-size:12px;color:#52525b;">${u.joined}</td>
             <td style="padding:16px 20px;">
                 <div style="display:flex;gap:8px;">
-                    <button onclick="openEditModal('${u.id}')" style="padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:#a1a1aa;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.03em;"
-                        onmouseenter="this.style.borderColor='rgba(255,255,255,0.2)';this.style.color='#fff'"
-                        onmouseleave="this.style.borderColor='rgba(255,255,255,0.08)';this.style.color='#a1a1aa'">EDIT</button>
-                    <button onclick="confirmDelete('${u.id}')" style="padding:6px 14px;border-radius:8px;border:1px solid rgba(239,68,68,0.2);background:transparent;color:#ef4444;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.03em;"
-                        onmouseenter="this.style.borderColor='rgba(239,68,68,0.5)';this.style.background='rgba(239,68,68,0.05)'"
-                        onmouseleave="this.style.borderColor='rgba(239,68,68,0.2)';this.style.background='transparent'">DELETE</button>
+                    <button class="row-btn row-btn-edit" data-action="edit" data-id="${u.id}">EDIT</button>
+                    <button class="row-btn row-btn-delete" data-action="delete" data-id="${u.id}">DELETE</button>
                 </div>
             </td>
         </tr>
@@ -88,7 +82,7 @@ function renderTable() {
 function showLoading() {
     document.getElementById('user-tbody').innerHTML = `
         <tr>
-            <td colspan="7" style="text-align:center;padding:48px;color:#52525b;font-size:13px;letter-spacing:0.03em;">
+            <td colspan="8" style="text-align:center;padding:48px;color:#52525b;font-size:13px;letter-spacing:0.03em;">
                 Loading members from Firestore…
             </td>
         </tr>`;
@@ -98,7 +92,7 @@ function showLoading() {
 function showFetchError(msg) {
     document.getElementById('user-tbody').innerHTML = `
         <tr>
-            <td colspan="7" style="text-align:center;padding:48px;">
+            <td colspan="8" style="text-align:center;padding:48px;">
                 <div style="color:#ef4444;font-size:13px;font-weight:600;margin-bottom:8px;">Firebase Error</div>
                 <div style="color:#52525b;font-size:12px;line-height:1.6;max-width:420px;margin:0 auto;">${msg}</div>
             </td>
@@ -118,7 +112,7 @@ async function loadUsers() {
     }
 }
 
-window.openAddModal = function () {
+function openAddModal() {
     document.getElementById('modal-title').textContent = 'Add Member';
     document.getElementById('modal-id').value = '';
     document.getElementById('modal-name').value = '';
@@ -134,9 +128,9 @@ window.openAddModal = function () {
     document.getElementById('modal-email-required').style.display = '';
     document.getElementById('user-modal').style.display = 'flex';
     document.getElementById('modal-name').focus();
-};
+}
 
-window.openEditModal = function (id) {
+function openEditModal(id) {
     const u = users[id];
     if (!u) return;
     document.getElementById('modal-title').textContent = 'Edit Member';
@@ -154,27 +148,27 @@ window.openEditModal = function (id) {
     document.getElementById('modal-email-required').style.display = 'none';
     document.getElementById('user-modal').style.display = 'flex';
     document.getElementById('modal-name').focus();
-};
+}
 
-window.closeModal = function () {
+function closeModal() {
     document.getElementById('user-modal').style.display = 'none';
-};
+}
 
-window.saveUser = async function () {
-    const id          = document.getElementById('modal-id').value;
-    const name        = document.getElementById('modal-name').value.trim();
-    const role        = document.getElementById('modal-role').value.trim();
-    const email       = document.getElementById('modal-email').value.trim().toLowerCase();
-    const tier        = document.getElementById('modal-tier').value;
-    const clearance   = document.getElementById('modal-clearance').value.trim();
-    const status      = document.getElementById('modal-status').value;
-    const joined      = document.getElementById('modal-joined').value.trim();
-    const avatarUrl   = document.getElementById('modal-avatar-url').value.trim();
+async function saveUser() {
+    const id            = document.getElementById('modal-id').value;
+    const name          = document.getElementById('modal-name').value.trim();
+    const role          = document.getElementById('modal-role').value.trim();
+    const email         = document.getElementById('modal-email').value.trim().toLowerCase();
+    const tier          = document.getElementById('modal-tier').value;
+    const clearance     = document.getElementById('modal-clearance').value.trim();
+    const status        = document.getElementById('modal-status').value;
+    const joined        = document.getElementById('modal-joined').value.trim();
+    const avatarUrl     = document.getElementById('modal-avatar-url').value.trim();
     const backgroundUrl = document.getElementById('modal-bg-url').value.trim();
 
-    const errEl  = document.getElementById('modal-error');
-    const saveBtn = document.querySelector('#user-modal .modal-btn-primary');
-    const isNew = !(id && users[id]);
+    const errEl   = document.getElementById('modal-error');
+    const saveBtn = document.getElementById('btn-modal-save');
+    const isNew   = !(id && users[id]);
 
     if (!name || !role || !clearance || !joined) {
         errEl.textContent = 'All fields are required.';
@@ -195,67 +189,90 @@ window.saveUser = async function () {
     }
 
     const targetId = isNew ? generateId() : id;
-    const member = { id: targetId, name, role, email, tier, clearance, status, joined, avatarUrl, backgroundUrl };
+    const member   = { id: targetId, name, role, email, tier, clearance, status, joined, avatarUrl, backgroundUrl };
 
-    saveBtn.disabled = true;
+    saveBtn.disabled    = true;
     saveBtn.textContent = 'Saving…';
     errEl.style.display = 'none';
 
     try {
         await setDoc(doc(firestoreDb, 'members', targetId), member);
         users[targetId] = member;
-        window.closeModal();
+        closeModal();
         renderTable();
     } catch (err) {
-        errEl.textContent = 'Failed to save. Check your Firestore rules or connection.';
+        errEl.textContent   = 'Failed to save. Check your Firestore rules or connection.';
         errEl.style.display = 'block';
     } finally {
-        saveBtn.disabled = false;
+        saveBtn.disabled    = false;
         saveBtn.textContent = 'Save Member';
     }
-};
+}
 
-window.confirmDelete = function (id) {
+function confirmDelete(id) {
     const u = users[id];
     if (!u) return;
     document.getElementById('confirm-name').textContent = u.name;
     document.getElementById('confirm-id').value = id;
     document.getElementById('confirm-modal').style.display = 'flex';
-};
+}
 
-window.closeConfirm = function () {
+function closeConfirm() {
     document.getElementById('confirm-modal').style.display = 'none';
-};
+}
 
-window.deleteUser = async function () {
-    const id      = document.getElementById('confirm-id').value;
-    const delBtn  = document.querySelector('#confirm-modal .confirm-btn-danger');
+async function deleteUser() {
+    const id     = document.getElementById('confirm-id').value;
+    const delBtn = document.getElementById('btn-confirm-delete');
 
-    delBtn.disabled = true;
+    delBtn.disabled    = true;
     delBtn.textContent = 'Removing…';
 
     try {
         await deleteDoc(doc(firestoreDb, 'members', id));
         delete users[id];
-        window.closeConfirm();
+        closeConfirm();
         renderTable();
     } catch (err) {
-        delBtn.disabled = false;
+        delBtn.disabled    = false;
         delBtn.textContent = 'Remove';
         alert('Failed to delete member. Check your Firestore rules or connection.');
     }
-};
+}
 
 document.addEventListener('DOMContentLoaded', function () {
     loadUsers();
 
+    // Static button listeners
+    document.getElementById('btn-add-member').addEventListener('click', openAddModal);
+    document.getElementById('btn-modal-cancel').addEventListener('click', closeModal);
+    document.getElementById('btn-modal-save').addEventListener('click', saveUser);
+    document.getElementById('btn-confirm-cancel').addEventListener('click', closeConfirm);
+    document.getElementById('btn-confirm-delete').addEventListener('click', deleteUser);
+
+    // Event delegation for dynamically generated table row buttons
+    document.getElementById('user-tbody').addEventListener('click', function (e) {
+        const btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+        const action = btn.dataset.action;
+        const id     = btn.dataset.id;
+        if (action === 'edit')   openEditModal(id);
+        if (action === 'delete') confirmDelete(id);
+    });
+
+    // Close modals by clicking the backdrop
     document.getElementById('user-modal').addEventListener('click', function (e) {
-        if (e.target === this) window.closeModal();
+        if (e.target === this) closeModal();
     });
     document.getElementById('confirm-modal').addEventListener('click', function (e) {
-        if (e.target === this) window.closeConfirm();
+        if (e.target === this) closeConfirm();
     });
+
+    // Close modals with Escape key
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') { window.closeModal(); window.closeConfirm(); }
+        if (e.key === 'Escape') {
+            closeModal();
+            closeConfirm();
+        }
     });
 });

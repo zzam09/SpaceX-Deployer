@@ -15,11 +15,11 @@ paths = [ "/" ]
 localPort = 19742
 
 [services.development]
-run = "pnpm --filter @workspace/spacex run dev"
+run = "npm run dev"
 
 [services.production]
-build = [ "pnpm", "--filter", "@workspace/spacex", "run", "build" ]
-publicDir = "artifacts/spacex/dist/public"
+build = [ "npm", "run", "build" ]
+publicDir = "dist"
 serve = "static"
 
 [[services.production.rewrites]]

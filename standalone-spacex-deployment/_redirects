@@ -1,0 +1,7 @@
+# Main fallback
+/*    /index.html   200
+
+# Specific pages
+/pages/login*     /pages/login.html     200
+/pages/user*      /pages/user.html      200
+/pages/admin*     /pages/admin*.html    200

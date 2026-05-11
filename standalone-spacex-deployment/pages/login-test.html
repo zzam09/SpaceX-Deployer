@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SpaceX HQ | Sign In (Test)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* ── Theme Variables ── */
+        :root {
+            --bg: #050505;
+            --surface: #0f0f0f;
+            --surface-hover: #141414;
+            --card-black: rgba(8, 8, 8, 0.95);
+            --border: rgba(255, 255, 255, 0.04);
+            --border-bright: rgba(255, 255, 255, 0.10);
+            --text: #ffffff;
+            --muted: #a1a1aa;
+            --accent: #ffffff;
+            --success: #10b981;
+            --pending: #f59e0b;
+            --danger: #ef4444;
+            --radius: 12px;
+            --gold: #c5a059;
+            --input-bg: rgba(255, 255, 255, 0.04);
+            --input-border: rgba(255, 255, 255, 0.08);
+            --input-focus: rgba(255, 255, 255, 0.15);
+            --logo-filter: brightness(0) invert(1);
+            --toggle-bg: rgba(255, 255, 255, 0.06);
+            --toggle-border: rgba(255, 255, 255, 0.08);
+            --toggle-color: #a1a1aa;
+        }
+
+        html.light {
+            --bg: #f2f2f2;
+            --surface: #ffffff;
+            --surface-hover: #f8f8f8;
+            --card-black: rgba(255, 255, 255, 0.98);
+            --border: rgba(0, 0, 0, 0.07);
+            --border-bright: rgba(0, 0, 0, 0.14);
+            --text: #0a0a0a;
+            --muted: #6b7280;
+            --accent: #0a0a0a;
+            --input-bg: rgba(0, 0, 0, 0.03);
+            --input-border: rgba(0, 0, 0, 0.10);
+            --input-focus: rgba(0, 0, 0, 0.18);
+            --logo-filter: brightness(0);
+            --toggle-bg: rgba(0, 0, 0, 0.05);
+            --toggle-border: rgba(0, 0, 0, 0.09);
+            --toggle-color: #6b7280;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            line-height: 1.5;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* ── Theme Toggle ── */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid var(--toggle-border);
+            background: var(--toggle-bg);
+            color: var(--toggle-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 100;
+        }
+        .theme-toggle:hover {
+            border-color: var(--border-bright);
+            color: var(--text);
+        }
+        .theme-toggle svg { width: 16px; height: 16px; }
+
+        /* ── Card ── */
+        .login-card {
+            width: 100%;
+            max-width: 440px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+            animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        /* ── Cover Banner ── */
+        .login-cover {
+            height: 100px;
+            background:
+                linear-gradient(to bottom, rgba(15,15,15,0.2) 0%, var(--surface) 100%),
+                url('https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format&fit=crop&w=800&q=80');
+            background-size: cover;
+            background-position: center 30%;
+            transition: background 0.3s;
+        }
+
+        .login-body {
+            padding: 0 36px 36px;
+            margin-top: -32px;
+        }
+
+        /* ── Logo ── */
+        .login-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+        .login-logo img {
+            height: 18px;
+            filter: var(--logo-filter);
+            transition: filter 0.3s;
+        }
+        .login-logo .divider {
+            width: 1px;
+            height: 16px;
+            background: var(--border-bright);
+        }
+        .login-logo .portal-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        /* ── Headings ── */
+        .step-heading { margin-bottom: 24px; }
+        .step-heading h2 {
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+        .step-heading p {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.55;
+        }
+        .step-heading p strong {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        /* ── Form ── */
+        .field { margin-bottom: 16px; }
+        .field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-bottom: 8px;
+        }
+        .field input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 12px;
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            outline: none;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .field input::placeholder { color: var(--muted); opacity: 0.5; }
+        .field input:focus {
+            border-color: var(--input-focus);
+            background: var(--input-bg);
+        }
+
+        /* ── OTP Inputs ── */
+        .otp-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+        .otp-group input {
+            flex: 1;
+            height: 64px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 14px;
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 24px;
+            font-weight: 600;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            caret-color: transparent;
+        }
+        .otp-group input:focus {
+            border-color: var(--border-bright);
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.04);
+        }
+        html.light .otp-group input:focus {
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+        }
+        .otp-group input.otp-filled {
+            border-color: var(--border-bright);
+        }
+        .otp-group input.otp-error {
+            border-color: var(--danger) !important;
+            box-shadow: 0 0 0 3px rgba(239,68,68,0.08) !important;
+        }
+
+        /* ── Countdown ── */
+        .countdown-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .countdown-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+        }
+        .countdown-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            transition: color 0.3s;
+        }
+        .countdown-value.expiring { color: var(--danger); }
+
+        /* ── Error / Info Messages ── */
+        .msg {
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 14px;
+            min-height: 18px;
+            display: none;
+            line-height: 1.5;
+        }
+        .msg.visible { display: block; }
+        .msg.error { color: var(--danger); }
+        .msg.success { color: var(--success); }
+        .msg.info { color: var(--muted); }
+
+        .resend-link {
+            display: none;
+            text-align: center;
+            margin-bottom: 14px;
+        }
+        .resend-link.visible { display: block; }
+        .resend-link a {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            text-decoration: underline;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .resend-link a:hover { color: var(--text); }
+
+        /* ── Buttons ── */
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            border: none;
+            background: var(--accent);
+            color: var(--bg);
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: filter 0.2s, transform 0.2s, opacity 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            letter-spacing: -0.01em;
+        }
+        .btn:hover:not(:disabled) { filter: brightness(0.88); transform: translateY(-1px); }
+        .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+        .btn .loading-spinner {
+            display: none;
+            width: 16px; height: 16px;
+            border: 2px solid rgba(0,0,0,0.15);
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 0.75s linear infinite;
+        }
+        .btn.is-loading .btn-text { display: none; }
+        .btn.is-loading .loading-spinner { display: inline-block; }
+
+        /* ── Divider ── */
+        .separator {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 28px 0;
+            transition: border-color 0.3s;
+        }
+
+        /* ── Screen management ── */
+        .step { display: none; }
+        .step.active { display: block; }
+
+        /* ── Animations ── */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(18px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Footer note ── */
+        .footer-note {
+            text-align: center;
+            font-size: 11px;
+            color: var(--muted);
+            padding: 16px 36px 24px;
+            border-top: 1px solid var(--border);
+            opacity: 0.5;
+            letter-spacing: 0.04em;
+            transition: border-color 0.3s, color 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Theme Toggle -->
+<button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <i data-lucide="moon" id="icon-moon"></i>
+    <i data-lucide="sun"  id="icon-sun" style="display:none;"></i>
+</button>
+
+<!-- Login Card -->
+<div class="login-card">
+    <div class="login-cover"></div>
+    <div class="login-body">
+
+        <div class="login-logo">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2e/SpaceX_logo_black.svg" alt="SpaceX">
+            <div class="divider"></div>
+            <span class="portal-label">Member Portal</span>
+        </div>
+
+        <!-- ── STEP 1 : Email ── -->
+        <div class="step active" id="step-email">
+            <div class="step-heading">
+                <h2>Access Portal</h2>
+                <p>Enter your registered email address to receive a one-time verification code.</p>
+            </div>
+
+            <div class="field">
+                <label>Email Address</label>
+                <input
+                    type="email"
+                    id="email-input"
+                    placeholder="your@email.com"
+                    autocomplete="email"
+                    inputmode="email"
+                    onkeydown="if(event.key==='Enter') sendCode()"
+                />
+            </div>
+
+            <div class="msg" id="email-msg"></div>
+
+            <button class="btn" id="send-btn" onclick="sendCode()">
+                <span class="btn-text">Send Verification Code</span>
+                <div class="loading-spinner"></div>
+            </button>
+        </div>
+
+        <!-- ── STEP 2 : OTP ── -->
+        <div class="step" id="step-otp">
+            <div class="step-heading">
+                <h2>Check your email</h2>
+                <p>We sent a 4-digit code to <strong id="email-display"></strong>. Enter it below to continue.</p>
+            </div>
+
+            <div class="otp-group" id="otp-group">
+                <input type="tel" maxlength="1" id="otp-0" inputmode="numeric" pattern="[0-9]" onkeydown="otpKeyDown(event,0)" oninput="otpInput(event,0)" />
+                <input type="tel" maxlength="1" id="otp-1" inputmode="numeric" pattern="[0-9]" onkeydown="otpKeyDown(event,1)" oninput="otpInput(event,1)" />
+                <input type="tel" maxlength="1" id="otp-2" inputmode="numeric" pattern="[0-9]" onkeydown="otpKeyDown(event,2)" oninput="otpInput(event,2)" />
+                <input type="tel" maxlength="1" id="otp-3" inputmode="numeric" pattern="[0-9]" onkeydown="otpKeyDown(event,3)" oninput="otpInput(event,3)" />
+            </div>
+
+            <div class="countdown-row">
+                <span class="countdown-label">Code expires in</span>
+                <span class="countdown-value" id="countdown-val">10:00</span>
+            </div>
+
+            <div class="msg" id="otp-msg"></div>
+            <div class="resend-link" id="resend-link">
+                <a onclick="requestNewCode()">Request a new code</a>
+            </div>
+
+            <button class="btn" id="verify-btn" onclick="verifyCode()">
+                <span class="btn-text">Verify &amp; Sign In</span>
+                <div class="loading-spinner"></div>
+            </button>
+
+            <hr class="separator">
+
+            <button class="btn" style="background: transparent; color: var(--muted); border: 1px solid var(--border); font-weight: 600;" onclick="goBack()">
+                <span class="btn-text">Use a different email</span>
+            </button>
+        </div>
+
+    </div>
+    <p class="footer-note">SpaceX HQ &mdash; Restricted Access</p>
+</div>
+
+<script type="module">
+import {
+    generateOTP,
+    saveOTP,
+    verifyOTP,
+    saveSession,
+    getSession,
+    isLoggedIn
+} from '../js/auth.js';
+
+/* ─── Redirect if already logged in ─── */
+if (isLoggedIn()) {
+    window.location.replace('/pages/user.html');
+}
+
+/* ─── Theme ─── */
+const THEME_KEY = 'spacex_theme';
+
+function applyTheme(theme) {
+    if (theme === 'light') {
+        document.documentElement.classList.add('light');
+        document.getElementById('icon-moon').style.display = 'none';
+        document.getElementById('icon-sun').style.display  = '';
+    } else {
+        document.documentElement.classList.remove('light');
+        document.getElementById('icon-moon').style.display = '';
+        document.getElementById('icon-sun').style.display  = 'none';
+    }
+    lucide.createIcons();
+}
+
+window.toggleTheme = function () {
+    const current = localStorage.getItem(THEME_KEY) || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    localStorage.setItem(THEME_KEY, next);
+    applyTheme(next);
+};
+
+/* Load saved theme immediately */
+applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
+
+/* ─── State ─── */
+let currentEmail  = '';
+let countdownTimer = null;
+let expiryTime    = 0;
+
+/* ─── Send Rate Limit ─── */
+const SEND_COOLDOWN_KEY = 'spacex_otp_send_at';
+const SEND_COOLDOWN_MS  = 60 * 1000;
+let sendCooldownTimer   = null;
+
+function startSendCooldown() {
+    localStorage.setItem(SEND_COOLDOWN_KEY, Date.now());
+    runSendCooldown();
+}
+
+function runSendCooldown() {
+    clearInterval(sendCooldownTimer);
+    const btn      = document.getElementById('send-btn');
+    const btnText  = btn.querySelector('.btn-text');
+    const resendEl = document.getElementById('resend-link');
+    const resendA  = resendEl.querySelector('a');
+
+    sendCooldownTimer = setInterval(() => {
+        const elapsed   = Date.now() - Number(localStorage.getItem(SEND_COOLDOWN_KEY) || 0);
+        const remaining = Math.ceil((SEND_COOLDOWN_MS - elapsed) / 1000);
+        if (remaining <= 0) {
+            clearInterval(sendCooldownTimer);
+            btn.disabled          = false;
+            btnText.textContent   = 'Send Verification Code';
+            resendA.textContent   = 'Request a new code';
+            resendA.style.pointerEvents = '';
+            resendA.style.opacity       = '';
+            return;
+        }
+        btn.disabled                = true;
+        btnText.textContent         = `Wait ${remaining}s`;
+        resendA.textContent         = `Request a new code (wait ${remaining}s)`;
+        resendA.style.pointerEvents = 'none';
+        resendA.style.opacity       = '0.4';
+    }, 200);
+}
+
+/* Resume cooldown if page was refreshed mid-cooldown */
+(function resumeCooldownOnLoad() {
+    const sentAt = Number(localStorage.getItem(SEND_COOLDOWN_KEY) || 0);
+    if (sentAt && Date.now() - sentAt < SEND_COOLDOWN_MS) runSendCooldown();
+})();
+
+/* ─── Helpers ─── */
+function showMsg(id, text, type) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.className = `msg visible ${type}`;
+}
+function clearMsg(id) {
+    const el = document.getElementById(id);
+    el.className = 'msg';
+    el.textContent = '';
+}
+function setLoading(btnId, on) {
+    document.getElementById(btnId).classList.toggle('is-loading', on);
+    document.getElementById(btnId).disabled = on;
+}
+function showStep(id) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+
+/* ─── Countdown ─── */
+function startCountdown(durationMs) {
+    clearInterval(countdownTimer);
+    expiryTime = Date.now() + durationMs;
+    const el = document.getElementById('countdown-val');
+    document.getElementById('resend-link').classList.remove('visible');
+
+    countdownTimer = setInterval(() => {
+        const remaining = expiryTime - Date.now();
+        if (remaining <= 0) {
+            clearInterval(countdownTimer);
+            el.textContent = '0:00';
+            el.classList.add('expiring');
+            document.getElementById('resend-link').classList.add('visible');
+            showMsg('otp-msg', 'Code expired. Request a new one below.', 'error');
+            return;
+        }
+        const mins = Math.floor(remaining / 60000);
+        const secs = Math.floor((remaining % 60000) / 1000);
+        el.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+        el.classList.toggle('expiring', remaining < 60000);
+    }, 500);
+}
+
+/* ─── OTP input controls ─── */
+window.otpInput = function (e, idx) {
+    const val = e.target.value.replace(/\D/g, '');
+    e.target.value = val ? val[0] : '';
+    e.target.classList.toggle('otp-filled', !!e.target.value);
+    clearOtpError();
+    clearMsg('otp-msg');
+    document.getElementById('resend-link').classList.remove('visible');
+    if (val && idx < 3) document.getElementById(`otp-${idx + 1}`).focus();
+};
+
+window.otpKeyDown = function (e, idx) {
+    if (e.key === 'Backspace' && !e.target.value && idx > 0) {
+        const prev = document.getElementById(`otp-${idx - 1}`);
+        prev.value = '';
+        prev.classList.remove('otp-filled');
+        prev.focus();
+    }
+    if (e.key === 'Enter') verifyCode();
+};
+
+function getOtpValue() {
+    return [0,1,2,3].map(i => document.getElementById(`otp-${i}`).value).join('');
+}
+
+function clearOtpError() {
+    [0,1,2,3].forEach(i => document.getElementById(`otp-${i}`).classList.remove('otp-error'));
+}
+
+function markOtpError() {
+    [0,1,2,3].forEach(i => document.getElementById(`otp-${i}`).classList.add('otp-error'));
+}
+
+function resetOtpInputs() {
+    [0,1,2,3].forEach(i => {
+        const el = document.getElementById(`otp-${i}`);
+        el.value = '';
+        el.classList.remove('otp-filled', 'otp-error');
+    });
+}
+
+/* ─── Resend email via Resend API ─── */
+async function sendEmailOTP(email, code) {
+    const apiKey = "re_ZX2xFmNE_CvwNSfnH8Yfh4GehY7wFrkcv"; // Hardcoded for testing
+    if (!apiKey) {
+        console.warn('VITE_RESEND_API_KEY not set — skipping email send.');
+        return;
+    }
+    await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+            from: 'SpaceX HQ <onboarding@resend.dev>',
+            to: [email],
+            subject: 'Your SpaceX Portal verification code',
+            html: `
+                <div style="font-family:'Inter',sans-serif;background:#050505;padding:40px;border-radius:16px;max-width:440px;margin:0 auto;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2e/SpaceX_logo_black.svg"
+                         style="filter:brightness(0) invert(1);height:20px;margin-bottom:32px;" alt="SpaceX">
+                    <p style="color:#a1a1aa;font-size:13px;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.07em;font-weight:700;">Verification Code</p>
+                    <p style="color:#ffffff;font-size:42px;font-family:'Courier New',monospace;font-weight:700;letter-spacing:0.2em;margin-bottom:24px;">${code}</p>
+                    <p style="color:#52525b;font-size:12px;line-height:1.6;">This code expires in <strong style="color:#a1a1aa;">10 minutes</strong>. Do not share it with anyone.</p>
+                </div>
+            `
+        })
+    });
+}
+
+/* ─── Step 1: Send Code ─── */
+window.sendCode = async function () {
+    const sentAt = Number(localStorage.getItem(SEND_COOLDOWN_KEY) || 0);
+    if (sentAt && Date.now() - sentAt < SEND_COOLDOWN_MS) return;
+
+    const email = document.getElementById('email-input').value.trim().toLowerCase();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showMsg('email-msg', 'Please enter a valid email address.', 'error');
+        return;
+    }
+    clearMsg('email-msg');
+    setLoading('send-btn', true);
+
+    try {
+        const code = generateOTP();
+        await saveOTP(email, code);
+        await sendEmailOTP(email, code);
+
+        startSendCooldown();
+        currentEmail = email;
+        document.getElementById('email-display').textContent = email;
+
+        showStep('step-otp');
+        resetOtpInputs();
+        startCountdown(10 * 60 * 1000);
+        clearMsg('otp-msg');
+        document.getElementById('countdown-val').classList.remove('expiring');
+        setTimeout(() => document.getElementById('otp-0').focus(), 100);
+    } catch (err) {
+        console.error(err);
+        showMsg('email-msg', 'Something went wrong. Please try again.', 'error');
+    } finally {
+        setLoading('send-btn', false);
+    }
+};
+
+/* ─── Step 2: Verify Code ─── */
+window.verifyCode = async function () {
+    const code = getOtpValue();
+    if (code.length < 4) {
+        showMsg('otp-msg', 'Please enter all 4 digits.', 'error');
+        return;
+    }
+    clearMsg('otp-msg');
+    clearOtpError();
+    setLoading('verify-btn', true);
+
+    try {
+        const valid = await verifyOTP(currentEmail, code);
+        if (valid) {
+            saveSession(currentEmail);
+            clearInterval(countdownTimer);
+            window.location.replace('/pages/user.html');
+        } else {
+            const expired = Date.now() >= expiryTime;
+            if (expired) {
+                showMsg('otp-msg', 'Code expired.', 'error');
+                document.getElementById('resend-link').classList.add('visible');
+            } else {
+                markOtpError();
+                showMsg('otp-msg', 'Incorrect code. Please try again.', 'error');
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        showMsg('otp-msg', 'Verification failed. Please try again.', 'error');
+    } finally {
+        setLoading('verify-btn', false);
+    }
+};
+
+/* ─── Request New Code ─── */
+window.requestNewCode = async function () {
+    const sentAt = Number(localStorage.getItem(SEND_COOLDOWN_KEY) || 0);
+    if (sentAt && Date.now() - sentAt < SEND_COOLDOWN_MS) return;
+
+    clearMsg('otp-msg');
+    document.getElementById('resend-link').classList.remove('visible');
+    document.getElementById('countdown-val').classList.remove('expiring');
+
+    try {
+        const code = generateOTP();
+        await saveOTP(currentEmail, code);
+        await sendEmailOTP(currentEmail, code);
+        startSendCooldown();
+        resetOtpInputs();
+        startCountdown(10 * 60 * 1000);
+        showMsg('otp-msg', 'A new code has been sent to your email.', 'success');
+        setTimeout(() => clearMsg('otp-msg'), 4000);
+        setTimeout(() => document.getElementById('otp-0').focus(), 100);
+    } catch (err) {
+        console.error(err);
+        showMsg('otp-msg', 'Failed to resend code. Please try again.', 'error');
+    }
+};
+
+/* ─── Back button ─── */
+window.goBack = function () {
+    clearInterval(countdownTimer);
+    resetOtpInputs();
+    clearMsg('otp-msg');
+    document.getElementById('resend-link').classList.remove('visible');
+    document.getElementById('countdown-val').classList.remove('expiring');
+    showStep('step-email');
+};
+
+/* ─── Init Lucide icons ─── */
+lucide.createIcons();
+</script>
+</body>
+</html>

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SpaceX HQ | Sign In (Simple Test)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* ── Theme Variables ── */
+        :root {
+            --bg: #050505;
+            --surface: #0f0f0f;
+            --surface-hover: #141414;
+            --card-black: rgba(8, 8, 8, 0.95);
+            --border: rgba(255, 255, 255, 0.04);
+            --border-bright: rgba(255, 255, 255, 0.10);
+            --text: #ffffff;
+            --muted: #a1a1aa;
+            --accent: #ffffff;
+            --success: #10b981;
+            --pending: #f59e0b;
+            --danger: #ef4444;
+            --radius: 12px;
+            --gold: #c5a059;
+            --input-bg: rgba(255, 255, 255, 0.04);
+            --input-border: rgba(255, 255, 255, 0.08);
+            --input-focus: rgba(255, 255, 255, 0.15);
+            --logo-filter: brightness(0) invert(1);
+            --toggle-bg: rgba(255, 255, 255, 0.06);
+            --toggle-border: rgba(255, 255, 255, 0.08);
+            --toggle-color: #a1a1aa;
+        }
+
+        html.light {
+            --bg: #f2f2f2;
+            --surface: #ffffff;
+            --surface-hover: #f8f8f8;
+            --card-black: rgba(255, 255, 255, 0.98);
+            --border: rgba(0, 0, 0, 0.07);
+            --border-bright: rgba(0, 0, 0, 0.14);
+            --text: #0a0a0a;
+            --muted: #6b7280;
+            --accent: #0a0a0a;
+            --input-bg: rgba(0, 0, 0, 0.03);
+            --input-border: rgba(0, 0, 0, 0.10);
+            --input-focus: rgba(0, 0, 0, 0.18);
+            --logo-filter: brightness(0);
+            --toggle-bg: rgba(0, 0, 0, 0.05);
+            --toggle-border: rgba(0, 0, 0, 0.09);
+            --toggle-color: #6b7280;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            line-height: 1.5;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* ── Theme Toggle ── */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid var(--toggle-border);
+            background: var(--toggle-bg);
+            color: var(--toggle-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 100;
+        }
+        .theme-toggle:hover {
+            border-color: var(--border-bright);
+            color: var(--text);
+        }
+        .theme-toggle svg { width: 16px; height: 16px; }
+
+        /* ── Card ── */
+        .login-card {
+            width: 100%;
+            max-width: 440px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+            animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        /* ── Cover Banner ── */
+        .login-cover {
+            height: 100px;
+            background:
+                linear-gradient(to bottom, rgba(15,15,15,0.2) 0%, var(--surface) 100%),
+                url('https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format&fit=crop&w=800&q=80');
+            background-size: cover;
+            background-position: center 30%;
+            transition: background 0.3s;
+        }
+
+        .login-body {
+            padding: 0 36px 36px;
+            margin-top: -32px;
+        }
+
+        /* ── Logo ── */
+        .login-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+        .login-logo img {
+            height: 18px;
+            filter: var(--logo-filter);
+            transition: filter 0.3s;
+        }
+        .login-logo .divider {
+            width: 1px;
+            height: 16px;
+            background: var(--border-bright);
+        }
+        .login-logo .portal-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        /* ── Headings ── */
+        .step-heading { margin-bottom: 24px; }
+        .step-heading h2 {
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+        .step-heading p {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.55;
+        }
+        .step-heading p strong {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        /* ── Form ── */
+        .field { margin-bottom: 16px; }
+        .field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-bottom: 8px;
+        }
+        .field input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 12px;
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            outline: none;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .field input::placeholder { color: var(--muted); opacity: 0.5; }
+        .field input:focus {
+            border-color: var(--input-focus);
+            background: var(--input-bg);
+        }
+
+        /* ── Buttons ── */
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            border: none;
+            background: var(--accent);
+            color: var(--bg);
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: filter 0.2s, transform 0.2s, opacity 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            letter-spacing: -0.01em;
+        }
+        .btn:hover:not(:disabled) { filter: brightness(0.88); transform: translateY(-1px); }
+        .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+        /* ── Footer note ── */
+        .footer-note {
+            text-align: center;
+            font-size: 11px;
+            color: var(--muted);
+            padding: 16px 36px 24px;
+            border-top: 1px solid var(--border);
+            opacity: 0.5;
+            letter-spacing: 0.04em;
+            transition: border-color 0.3s, color 0.3s;
+        }
+
+        /* ── Animations ── */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(18px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Theme Toggle -->
+<button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <i data-lucide="moon" id="icon-moon"></i>
+    <i data-lucide="sun"  id="icon-sun" style="display:none;"></i>
+</button>
+
+<!-- Login Card -->
+<div class="login-card">
+    <div class="login-cover"></div>
+    <div class="login-body">
+
+        <div class="login-logo">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2e/SpaceX_logo_black.svg" alt="SpaceX">
+            <div class="divider"></div>
+            <span class="portal-label">Member Portal</span>
+        </div>
+
+        <div class="step-heading">
+            <h2>Access Portal</h2>
+            <p>Theme toggle test - Click the moon/sun icon in the top-right corner.</p>
+        </div>
+
+        <div class="field">
+            <label>Email Address</label>
+            <input
+                type="email"
+                placeholder="your@email.com"
+                autocomplete="email"
+                inputmode="email"
+            />
+        </div>
+
+        <button class="btn" onclick="showMessage()">
+            <span class="btn-text">Test Theme Toggle</span>
+        </button>
+
+    </div>
+    <p class="footer-note">SpaceX HQ &mdash; Restricted Access</p>
+</div>
+
+<script>
+/* ─── Theme Management ─── */
+const THEME_KEY = 'spacex_theme';
+
+function applyTheme(theme) {
+    if (theme === 'light') {
+        document.documentElement.classList.add('light');
+        document.getElementById('icon-moon').style.display = 'none';
+        document.getElementById('icon-sun').style.display  = '';
+    } else {
+        document.documentElement.classList.remove('light');
+        document.getElementById('icon-moon').style.display = '';
+        document.getElementById('icon-sun').style.display  = 'none';
+    }
+    lucide.createIcons();
+}
+
+function toggleTheme() {
+    const current = localStorage.getItem(THEME_KEY) || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    localStorage.setItem(THEME_KEY, next);
+    applyTheme(next);
+    console.log('Theme switched to:', next);
+}
+
+function showMessage() {
+    const theme = document.documentElement.classList.contains('light') ? 'light' : 'dark';
+    alert('Current theme: ' + theme + '\n\nClick the theme toggle button in the top-right corner to switch themes!');
+}
+
+/* Load saved theme immediately */
+applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
+
+/* Initialize Lucide icons */
+document.addEventListener('DOMContentLoaded', function() {
+    lucide.createIcons();
+});
+</script>
+</body>
+</html>
